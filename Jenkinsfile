@@ -1,28 +1,16 @@
 pipeline {
-  agent any
-  stages {
-    stage('Parallel execution') {
-      parallel {
-        stage('Say Hello') {
-          steps {
-            sh 'echo "hello world"'
-          }
-        }
-
-        stage('build app') {
-          agent {
-            docker {
-              image 'gradle:6-jdk11'
+    agent { label 'swarm' }
+    stages {
+        stage('Clone Down') {
+            steps {
+                stash exclude: '.git/**', name: 'code'
             }
-
-          }
-          steps {
-            sh 'ci/build-app.sh'
-          }
         }
-
-      }
+        stage('Build App') {
+            options { skipDefaultCheckout(true) }
+            steps {
+                unstash 'code'
+            }
+        }
     }
-
-  }
 }
